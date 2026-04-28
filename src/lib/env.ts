@@ -6,4 +6,8 @@ export function validateEnv() {
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
   }
+
+  if (import.meta.env.VITE_OPENAI_API_KEY) {
+    console.warn('VITE_OPENAI_API_KEY is set but should not be used. Store provider secrets server-side only.')
+  }
 }
