@@ -45,6 +45,29 @@ interface UserProfileContextType {
 
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined)
 
+const USER_PROFILE_SELECT = [
+  'user_id',
+  'display_name',
+  'job_title',
+  'years_experience',
+  'company_type',
+  'primary_discipline',
+  'specialist_interests',
+  'industries',
+  'target_audience',
+  'primary_goal',
+  'current_linkedin_presence',
+  'approx_follower_count',
+  'style_preferences',
+  'posting_frequency_goal',
+  'strategic_purpose',
+  'preferred_posting_days',
+  'content_goals',
+  'ai_provider',
+  'ai_model',
+  'onboarding_completed',
+].join(', ')
+
 export function UserProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -62,7 +85,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select(USER_PROFILE_SELECT)
         .eq('user_id', user.id)
         .maybeSingle()
 
