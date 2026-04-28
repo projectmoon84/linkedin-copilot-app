@@ -27,6 +27,7 @@ export type Database = {
           claude_api_key_encrypted: string | null
           ai_provider: string | null
           ai_model: string | null
+          ai_model_preferences: Record<string, unknown>
           created_at: string
           updated_at: string
         }
@@ -50,6 +51,7 @@ export type Database = {
           onboarding_completed?: boolean
           ai_provider?: string | null
           ai_model?: string | null
+          ai_model_preferences?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -73,6 +75,7 @@ export type Database = {
           onboarding_completed?: boolean
           ai_provider?: string | null
           ai_model?: string | null
+          ai_model_preferences?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }

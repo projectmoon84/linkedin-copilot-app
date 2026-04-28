@@ -33,6 +33,7 @@ export interface UserProfile {
   contentGoals: string[]
   aiProvider: string | null
   aiModel: string | null
+  aiModelPreferences: Record<string, unknown> | null
   onboardingCompleted: boolean
 }
 
@@ -65,6 +66,7 @@ const USER_PROFILE_SELECT = [
   'content_goals',
   'ai_provider',
   'ai_model',
+  'ai_model_preferences',
   'onboarding_completed',
 ].join(', ')
 
@@ -121,6 +123,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         contentGoals: row.content_goals || [],
         aiProvider: row.ai_provider,
         aiModel: row.ai_model,
+        aiModelPreferences: row.ai_model_preferences as Record<string, unknown> | null,
         onboardingCompleted: Boolean(row.onboarding_completed),
       })
     } finally {

@@ -36,6 +36,56 @@ export interface AiPreferences {
   model: string | null
 }
 
+export type AiFeature =
+  | 'draft_generation'
+  | 'hooks_refinement'
+  | 'research'
+  | 'voice_analysis'
+  | 'repurposing'
+  | 'insights'
+
+export interface AiFeaturePreference {
+  provider: AiProvider
+  model: string
+}
+
+export type AiFeaturePreferences = Partial<Record<AiFeature, AiFeaturePreference>>
+
+export const AI_PROVIDER_OPTIONS: Array<{ value: AiProvider; label: string; description: string }> = [
+  { value: 'openai', label: 'OpenAI', description: 'Wide model choice and strong structured output support.' },
+  { value: 'claude', label: 'Claude', description: 'Anthropic models with strong long-form reasoning and writing quality.' },
+]
+
+export const AI_FEATURE_OPTIONS: Array<{ value: AiFeature; label: string; description: string }> = [
+  { value: 'draft_generation', label: 'Draft generation', description: 'Main post writing from prompts or articles.' },
+  { value: 'hooks_refinement', label: 'Hooks & refinements', description: 'Hook generation and purpose-based rewrites.' },
+  { value: 'research', label: 'Research & summaries', description: 'Article summaries and pre-writing question generation.' },
+  { value: 'voice_analysis', label: 'Voice analysis', description: 'Learning the writer voice from past samples.' },
+  { value: 'repurposing', label: 'Repurposing', description: 'Turning one post into other content formats.' },
+  { value: 'insights', label: 'Insights', description: 'Weekly insight generation and analysis flows.' },
+]
+
+export const AI_MODEL_OPTIONS: Record<AiProvider, Array<{ value: string; label: string; description: string }>> = {
+  openai: [
+    { value: 'gpt-4.1', label: 'GPT-4.1', description: 'Higher quality general-purpose writing model.' },
+    { value: 'gpt-4.1-mini', label: 'GPT-4.1 mini', description: 'Faster and cheaper for iterative drafting.' },
+    { value: 'gpt-4.1-nano', label: 'GPT-4.1 nano', description: 'Lowest-cost option for lightweight tasks.' },
+    { value: 'gpt-4o', label: 'GPT-4o', description: 'Strong all-round multimodal model.' },
+    { value: 'gpt-4o-mini', label: 'GPT-4o mini', description: 'Fast lower-cost OpenAI default.' },
+  ],
+  claude: [
+    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', description: 'Balanced Claude model for writing and reasoning.' },
+    { value: 'claude-3-7-sonnet-20250219', label: 'Claude Sonnet 3.7', description: 'Earlier high-performance Claude Sonnet release.' },
+    { value: 'claude-3-5-sonnet-20241022', label: 'Claude Sonnet 3.5', description: 'Stable previous-generation Sonnet model.' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku 3.5', description: 'Fastest Claude option for lighter tasks.' },
+  ],
+}
+
+export const DEFAULT_MODEL_BY_PROVIDER: Record<AiProvider, string> = {
+  openai: 'gpt-4.1-mini',
+  claude: 'claude-sonnet-4-20250514',
+}
+
 export interface GenerationContext {
   // User profile
   displayName: string | null
@@ -305,6 +355,49 @@ async function callEdgeFunction(body: Record<string, unknown>): Promise<any> {
   return data
 }
 
+async function resolveAiConfig(
+  feature: AiFeature,
+  override?: Partial<AiFeaturePreference>,
+): Promise<AiFeaturePreference | null> {
+  const [basePreferences, featurePreferences] = await Promise.all([
+    getAiPreferences(),
+    getAiFeaturePreferences(),
+  ])
+
+  const baseProvider = override?.provider ?? basePreferences.provider
+  if (!baseProvider) return null
+
+  const providerSpecificModels = AI_MODEL_OPTIONS[baseProvider]
+  const featurePreference = featurePreferences[feature]
+  const model = override?.model
+    ?? (featurePreference?.provider === baseProvider ? featurePreference.model : null)
+    ?? (basePreferences.provider === baseProvider ? basePreferences.model : null)
+    ?? DEFAULT_MODEL_BY_PROVIDER[baseProvider]
+
+  const validModel = providerSpecificModels.some((option) => option.value === model)
+    ? model
+    : DEFAULT_MODEL_BY_PROVIDER[baseProvider]
+
+  return {
+    provider: baseProvider,
+    model: validModel,
+  }
+}
+
+async function callEdgeFunctionForFeature(
+  feature: AiFeature,
+  body: Record<string, unknown>,
+  override?: Partial<AiFeaturePreference>,
+): Promise<any> {
+  const resolved = await resolveAiConfig(feature, override)
+
+  return callEdgeFunction({
+    ...body,
+    provider: body.provider ?? resolved?.provider,
+    model: body.model ?? resolved?.model,
+  })
+}
+
 // ============================================================
 // Content generation functions
 // ============================================================
@@ -315,7 +408,7 @@ export async function generateDraftSecure(context: GenerationContext): Promise<G
   const userPrompt = buildUserPrompt(context)
   const purpose = context.strategicPurpose || 'trust'
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('draft_generation', {
     action: 'generate',
     systemPrompt,
     userPrompt,
@@ -396,7 +489,7 @@ Return ONLY a JSON array of 10 objects in exactly this format:
 
 Framework names must be one of: Contrarian, Specificity hook, Negative bias, Story opener`
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('hooks_refinement', {
     action: 'hooks',
     content: prompt,
   })
@@ -476,7 +569,7 @@ Produce a JSON object with exactly this shape:
 
 Return ONLY the JSON object, nothing else.`
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('research', {
     action: 'generate',
     systemPrompt: 'You are a helpful article analyst. Always respond with valid JSON only.',
     userPrompt: prompt,
@@ -541,7 +634,7 @@ Return ONLY a JSON array:
   { "question": "...", "options": ["...", "...", "..."] }
 ]`
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('research', {
     action: 'generate',
     systemPrompt: 'You generate targeted multiple-choice questions to shape LinkedIn posts. Return ONLY valid JSON, nothing else.',
     userPrompt,
@@ -617,7 +710,7 @@ Important:
 Return ONLY the JSON object, nothing else.`
 
   try {
-    const data = await callEdgeFunction({
+    const data = await callEdgeFunctionForFeature('voice_analysis', {
       action: 'generate',
       systemPrompt: 'You are a writing style analyst. Always respond with valid JSON only.',
       userPrompt: prompt,
@@ -688,7 +781,7 @@ Hard rules:
 - Every derivative must stand alone — a reader shouldn't need the original to understand it
 - Rewrite the hook for every format — the hook is 90% of the battle`
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('repurposing', {
     action: 'generate',
     systemPrompt,
     userPrompt,
@@ -718,7 +811,7 @@ export async function refineDraftSecure(
 ): Promise<string> {
   const systemPrompt = buildSystemPrompt(context)
 
-  const data = await callEdgeFunction({
+  const data = await callEdgeFunctionForFeature('hooks_refinement', {
     action: 'refine',
     systemPrompt,
     content,
@@ -770,7 +863,7 @@ export async function deleteApiKey(): Promise<boolean> {
 
 export async function testApiKeySecure(provider: AiProvider = 'openai'): Promise<{ success: boolean; error?: string }> {
   try {
-    const data = await callEdgeFunction({ action: 'test', provider })
+    const data = await callEdgeFunctionForFeature('draft_generation', { action: 'test', provider }, { provider })
     return { success: data.success, error: data.error }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -824,6 +917,31 @@ export async function getAiPreferences(): Promise<AiPreferences> {
   }
 }
 
+export async function getAiFeaturePreferences(): Promise<AiFeaturePreferences> {
+  const { data, error } = await supabase.rpc('get_ai_feature_preferences' as any)
+  if (error) {
+    console.error('Error getting AI feature preferences:', error)
+    return {}
+  }
+
+  const parsed = (data ?? {}) as Record<string, unknown>
+  const preferences: AiFeaturePreferences = {}
+
+  for (const feature of AI_FEATURE_OPTIONS.map((option) => option.value)) {
+    const value = parsed[feature]
+    if (!value || typeof value !== 'object') continue
+    const record = value as Record<string, unknown>
+    if ((record.provider === 'openai' || record.provider === 'claude') && typeof record.model === 'string') {
+      preferences[feature] = {
+        provider: record.provider,
+        model: record.model,
+      }
+    }
+  }
+
+  return preferences
+}
+
 export async function setAiPreferences(provider: AiProvider, model: string): Promise<boolean> {
   const { data, error } = await (supabase.rpc as any)('set_ai_preferences', {
     p_provider: provider,
@@ -831,6 +949,17 @@ export async function setAiPreferences(provider: AiProvider, model: string): Pro
   })
   if (error) {
     console.error('Error setting AI preferences:', error)
+    return false
+  }
+  return data === true
+}
+
+export async function setAiFeaturePreferences(preferences: AiFeaturePreferences): Promise<boolean> {
+  const { data, error } = await (supabase.rpc as any)('set_ai_feature_preferences', {
+    p_preferences: preferences,
+  })
+  if (error) {
+    console.error('Error setting AI feature preferences:', error)
     return false
   }
   return data === true
