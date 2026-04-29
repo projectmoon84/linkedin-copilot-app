@@ -63,7 +63,7 @@ export function LoginPage() {
           <img src={lincoLogo} alt="LINCO" className="mx-auto size-16 rounded-2xl" />
           <div className="space-y-1">
             <h1 className="font-heading text-xl font-semibold text-foreground">Welcome to LINCO.</h1>
-            <p className="text-sm text-muted-foreground">Sign in to start building inside your LinkedIn content engine.</p>
+            <p className="text-sm text-muted-foreground">Sign in to start writing, planning, and learning inside LINCO.</p>
           </div>
         </div>
 
