@@ -14,6 +14,7 @@ import {
 import type { Icon } from '@tabler/icons-react'
 import { useUserProfile } from '@/contexts/UserProfileContext'
 import { cn } from '@/lib/utils'
+import lincoLogo from '@/assets/linco-logo.svg'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -84,12 +85,10 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       )}
     >
       <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <IconPencil size={17} />
-        </div>
+        <img src={lincoLogo} alt="LINCO" className="size-8 shrink-0 rounded-lg" />
         {!isCollapsed && (
           <span className="truncate font-heading text-base font-semibold text-foreground">
-            Content Copilot
+            LINCO
           </span>
         )}
       </div>

@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { IconBrandGoogle, IconLoader2 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
+import lincoLogo from '@/assets/linco-logo.svg'
 
 interface LocationState {
   from?: {
@@ -59,8 +60,11 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="app-card w-full max-w-md p-6">
         <div className="space-y-2 text-center">
-          <h1 className="font-heading text-xl font-semibold text-foreground">Your LinkedIn content engine.</h1>
-          <p className="text-sm text-muted-foreground">Sign in to start building the new copilot workspace.</p>
+          <img src={lincoLogo} alt="LINCO" className="mx-auto size-16 rounded-2xl" />
+          <div className="space-y-1">
+            <h1 className="font-heading text-xl font-semibold text-foreground">Welcome to LINCO.</h1>
+            <p className="text-sm text-muted-foreground">Sign in to start building inside your LinkedIn content engine.</p>
+          </div>
         </div>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

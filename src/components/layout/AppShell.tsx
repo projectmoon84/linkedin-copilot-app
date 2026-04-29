@@ -1,4 +1,4 @@
-import { Suspense, useState, type CSSProperties, type ReactNode } from 'react'
+import { Suspense, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { IconSettings } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
@@ -24,7 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 function getPageTitle(pathname: string) {
-  return PAGE_TITLES[pathname] || 'Content Copilot'
+  return PAGE_TITLES[pathname] || 'LINCO'
 }
 
 function initials(name: string | null | undefined) {
@@ -38,6 +38,11 @@ export function AppShell({ children, hideHeader }: AppShellProps) {
   const { profile, avatarUrl } = useUserProfile()
   const shouldHideHeader = hideHeader ?? (location.pathname === '/home' || location.pathname === '/compose')
   const content = children ?? <Outlet />
+
+  useEffect(() => {
+    const pageTitle = getPageTitle(location.pathname)
+    document.title = pageTitle === 'LINCO' ? 'LINCO' : `${pageTitle} | LINCO`
+  }, [location.pathname])
 
   const handleToggleCollapse = () => {
     setSidebarCollapsed((prev) => {
