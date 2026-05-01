@@ -5,21 +5,16 @@ export type ThemePreference = 'system' | 'light' | 'dark'
 const STORAGE_KEY = 'theme-preference'
 
 function getStoredPreference(): ThemePreference {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
-  return 'system'
+  return 'light'
 }
 
-function applyTheme(preference: ThemePreference) {
-  const isDark =
-    preference === 'dark' ||
-    (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-  document.documentElement.classList.toggle('dark', isDark)
+function applyTheme() {
+  document.documentElement.classList.remove('dark')
 }
 
 export function initTheme() {
-  applyTheme(getStoredPreference())
+  localStorage.setItem(STORAGE_KEY, 'light')
+  applyTheme()
 }
 
 export function useTheme() {
@@ -28,18 +23,16 @@ export function useTheme() {
   const setTheme = useCallback((next: ThemePreference) => {
     localStorage.setItem(STORAGE_KEY, next)
     setPreference(next)
-    applyTheme(next)
+    applyTheme()
   }, [])
 
   useEffect(() => {
-    applyTheme(preference)
-
-    if (preference !== 'system') return undefined
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => applyTheme('system')
-    media.addEventListener('change', handler)
-    return () => media.removeEventListener('change', handler)
+    if (preference !== 'light') {
+      localStorage.setItem(STORAGE_KEY, 'light')
+      setPreference('light')
+    }
+    applyTheme()
+    return undefined
   }, [preference])
 
   return { preference, setTheme } as const

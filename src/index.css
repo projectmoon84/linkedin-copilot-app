@@ -208,26 +208,6 @@ h6 {
   }
 }
 
-.dark {
-  --color-background: #1c1917;
-  --color-foreground: #fafaf9;
-  --color-muted: #292524;
-  --color-muted-foreground: #a8a29e;
-  --color-border: #44403c;
-  --color-input: #44403c;
-  --color-ring: #78716c;
-  --color-primary: #fafaf9;
-  --color-primary-foreground: #1c1917;
-  --color-secondary: #292524;
-  --color-secondary-foreground: #fafaf9;
-  --color-accent: #44403c;
-  --color-accent-foreground: #fafaf9;
-  --color-card: #292524;
-  --color-card-foreground: #fafaf9;
-  --color-popover: #292524;
-  --color-popover-foreground: #fafaf9;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

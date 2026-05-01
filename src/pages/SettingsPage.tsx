@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { IconCheck, IconKey, IconLoader2, IconPalette, IconTrash, IconUser } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,7 +48,6 @@ import {
   type FollowerRange,
 } from '@/lib/onboarding-types'
 import { upsertUserProfile } from '@/lib/services/profile-service'
-import { useTheme, type ThemePreference } from '@/lib/useTheme'
 import { cn } from '@/lib/utils'
 
 type SectionId = 'about' | 'style' | 'app'
@@ -152,7 +152,7 @@ function normalizeFeaturePreferences(value: AiFeaturePreferences | null | undefi
 export function SettingsPage() {
   const { user } = useAuth()
   const { profile, refreshProfile } = useUserProfile()
-  const { preference, setTheme } = useTheme()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [activeSection, setActiveSection] = useState<SectionId>('about')
   const [about, setAbout] = useState<AboutForm>(EMPTY_ABOUT)
   const [style, setStyle] = useState<StyleForm>(EMPTY_STYLE)
@@ -175,6 +175,13 @@ export function SettingsPage() {
   const [initialDefaultModel, setInitialDefaultModel] = useState(DEFAULT_MODEL_BY_PROVIDER.openai)
   const [featurePreferences, setFeaturePreferencesState] = useState<AiFeaturePreferences>({})
   const [initialFeaturePreferences, setInitialFeaturePreferences] = useState<AiFeaturePreferences>({})
+
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (section === 'about' || section === 'style' || section === 'app') {
+      setActiveSection(section)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!profile) return
@@ -464,7 +471,10 @@ export function SettingsPage() {
                 <button
                   key={section.id}
                   type="button"
-                  onClick={() => setActiveSection(section.id)}
+                  onClick={() => {
+                    setActiveSection(section.id)
+                    setSearchParams({ section: section.id })
+                  }}
                   className={cn(
                     'w-full rounded-lg px-3 py-2 text-left transition-colors',
                     active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -666,20 +676,8 @@ export function SettingsPage() {
               </Field>
               {appError && <p className="text-sm text-negative">{appError}</p>}
               <Field label="Theme">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {(['system', 'light', 'dark'] as ThemePreference[]).map((theme) => (
-                    <button
-                      key={theme}
-                      type="button"
-                      onClick={() => setTheme(theme)}
-                      className={cn(
-                        'rounded-lg border p-4 text-left capitalize transition-colors',
-                        preference === theme ? 'border-primary bg-muted text-foreground' : 'border-border text-muted-foreground hover:bg-muted',
-                      )}
-                    >
-                      <span className="text-sm font-semibold">{theme}</span>
-                    </button>
-                  ))}
+                <div className="rounded-lg border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
+                  LINCO is currently using a light-only interface. Dark mode is disabled for now so the product stays visually consistent while the setup experience continues to evolve.
                 </div>
               </Field>
               <SaveRow section="app" dirty={dirty.app} saved={savedSection === 'app'} saving={savingSection === 'app'} onSave={() => void saveApp()} />

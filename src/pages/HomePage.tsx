@@ -4,6 +4,7 @@ import { AnalyticsDueBanner } from '@/components/home/AnalyticsDueBanner'
 import { InsightsBanner } from '@/components/home/InsightsBanner'
 import { RecentPostsCard } from '@/components/home/RecentPostsCard'
 import { ScoreVerdictCard } from '@/components/home/ScoreVerdictCard'
+import { SetupChecklistCard } from '@/components/home/SetupChecklistCard'
 import { WeekProgress } from '@/components/home/WeekProgress'
 import { CountUp } from '@/components/ui/count-up'
 import { useUserProfile } from '@/contexts/UserProfileContext'
@@ -14,6 +15,13 @@ import type { RecentPost } from '@/lib/services/draft-service'
 
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const purposes: StrategicPurpose[] = ['discovery', 'trust', 'authority']
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
 
 export function HomePage() {
   const { profile } = useUserProfile()
@@ -31,12 +39,13 @@ export function HomePage() {
 
   const weeklyPosts = data.stats?.totalThisWeek ?? 0
   const weeklyTarget = Math.max(1, Math.round(data.recommendation?.postsPerWeek ?? 1))
+  const greeting = getGreeting()
 
   return (
     <div className="app-page mx-auto">
       <div className="home-welcome-row">
         <div>
-          <h1>{profile?.displayName ? `Good morning, ${profile.displayName.split(' ')[0]}` : 'Good morning'}</h1>
+          <h1>{profile?.displayName ? `${greeting}, ${profile.displayName.split(' ')[0]}` : greeting}</h1>
           <p>
             {weeklyPosts} of {weeklyTarget} actions done
           </p>
@@ -46,6 +55,8 @@ export function HomePage() {
           Refresh
         </button>
       </div>
+
+      <SetupChecklistCard />
 
       <AnalyticsDueBanner posts={data.analyticsDuePosts} />
 
