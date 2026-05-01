@@ -7,6 +7,9 @@ interface AudienceDemographicsCardProps {
 
 export function AudienceDemographicsCard({ demographics }: AudienceDemographicsCardProps) {
   const sections = [
+    { label: 'Job title', entries: demographics.jobTitles },
+    { label: 'Company size', entries: demographics.companySizes },
+    { label: 'Company', entries: demographics.companies },
     { label: 'Job function', entries: demographics.jobFunctions },
     { label: 'Seniority', entries: demographics.seniority },
     { label: 'Industry', entries: demographics.industries },
@@ -24,12 +27,28 @@ export function AudienceDemographicsCard({ demographics }: AudienceDemographicsC
           <p className="text-xs text-stone-500">Top audience patterns from analytics imports.</p>
         </div>
       </div>
+      {(demographics.topJobTitle || demographics.topLocation || demographics.topIndustry) && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {demographics.topJobTitle && <HighlightPill label="Top job title" value={demographics.topJobTitle} />}
+          {demographics.topLocation && <HighlightPill label="Top location" value={demographics.topLocation} />}
+          {demographics.topIndustry && <HighlightPill label="Top industry" value={demographics.topIndustry} />}
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-3">
         {sections.slice(0, 3).map((section) => (
           <DemographicSection key={section.label} label={section.label} entries={section.entries || {}} />
         ))}
       </div>
     </section>
+  )
+}
+
+function HighlightPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full bg-stone-100 px-3 py-1.5 text-xs text-stone-600">
+      <span className="font-medium text-stone-500">{label}:</span>{' '}
+      <span className="text-stone-800">{value}</span>
+    </div>
   )
 }
 

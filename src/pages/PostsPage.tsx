@@ -26,10 +26,16 @@ type Tab = 'drafts' | 'published'
 
 function combineDemographics(posts: Draft[]): AudienceDemographics | null {
   const combined: Required<AudienceDemographics> = {
+    companySizes: {},
+    jobTitles: {},
+    companies: {},
     jobFunctions: {},
     seniority: {},
     industries: {},
     locations: {},
+    topJobTitle: null,
+    topLocation: null,
+    topIndustry: null,
   }
   let hasAny = false
 
@@ -37,6 +43,9 @@ function combineDemographics(posts: Draft[]): AudienceDemographics | null {
     const demographics = post.performance?.audienceDemographics
     if (!demographics) continue
     for (const [sourceKey, targetKey] of [
+      ['companySizes', 'companySizes'],
+      ['jobTitles', 'jobTitles'],
+      ['companies', 'companies'],
       ['jobFunctions', 'jobFunctions'],
       ['seniority', 'seniority'],
       ['industries', 'industries'],
@@ -49,6 +58,10 @@ function combineDemographics(posts: Draft[]): AudienceDemographics | null {
         hasAny = true
       }
     }
+
+    combined.topJobTitle = combined.topJobTitle ?? demographics.topJobTitle ?? null
+    combined.topLocation = combined.topLocation ?? demographics.topLocation ?? null
+    combined.topIndustry = combined.topIndustry ?? demographics.topIndustry ?? null
   }
 
   return hasAny ? combined : null

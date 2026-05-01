@@ -53,6 +53,10 @@ function mapPerformance(performance: any): PerformanceData | null {
     impressions: performance.impressions ?? null,
     membersReached: performance.members_reached ?? null,
     saves: performance.saves ?? null,
+    premiumCustomButtonInteractions: performance.premium_custom_button_interactions ?? null,
+    profileViewsAfter: performance.profile_views_after ?? null,
+    followersGainedFromPost: performance.followers_gained_from_post ?? null,
+    sendsOnLinkedIn: performance.sends_on_linkedin ?? null,
     followerCountAtPost: performance.follower_count_at_post ?? null,
     linkedinPostUrl: performance.linkedin_post_url ?? null,
     audienceDemographics: (performance.audience_demographics ?? null) as AudienceDemographics | null,
@@ -190,6 +194,10 @@ export async function fetchDrafts(userId: string): Promise<Draft[]> {
         impressions,
         members_reached,
         saves,
+        premium_custom_button_interactions,
+        profile_views_after,
+        followers_gained_from_post,
+        sends_on_linkedin,
         follower_count_at_post,
         linkedin_post_url,
         audience_demographics,
@@ -218,7 +226,8 @@ export async function fetchDrafts(userId: string): Promise<Draft[]> {
           reposts,
           impressions,
           members_reached,
-          saves
+          saves,
+          profile_views_after
         )
       `)
       .eq('user_id', userId)

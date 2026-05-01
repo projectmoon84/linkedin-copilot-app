@@ -8,6 +8,10 @@ export interface PerformanceData {
   impressions: number | null
   membersReached: number | null
   saves: number | null
+  premiumCustomButtonInteractions: number | null
+  profileViewsAfter: number | null
+  followersGainedFromPost: number | null
+  sendsOnLinkedIn: number | null
   followerCountAtPost: number | null
   linkedinPostUrl: string | null
   audienceDemographics: AudienceDemographics | null
